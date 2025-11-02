@@ -1,68 +1,56 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Titan+One&display=swap');
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@theme {
+    --color-light-bg: #f5f7f2;
+    --color-light-surface: #ffffff;
+    --color-light-primary-text: #1e293b;
+    --color-light-secondary-text: #64748b;
+    --color-light-primary: #32cd32;
+    --color-light-secondary: #4338ca;
+    --color-light-secondary-hover: #312e81;
+    --color-light-fail: #ef4444;
+    --color-light-success: #22c55e;
+    --color-light-primary-hover: #28a428;
+    --color-light-fail-hover: #dc2626;
+    --color-light-success-hover: #16a34a;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+    --color-dark-bg: #181818;
+    --color-dark-surface: #262626;
+    --color-dark-primary-text: #ededed;
+    --color-dark-secondary-text: #9ca3af;
+    --color-dark-primary: #84cc16;
+    --color-dark-secondary: #a78bfa;
+    --color-dark-fail: #f87171;
+    --color-dark-success: #4ade80;
+    --color-dark-primary-hover: #65a30d;
+    --color-dark-secondary-hover: #8b5cf6;
+    --color-dark-fail-hover: #ef4444;
+    --color-dark-success-hover: #22c55e;
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+    /* Scrollbar Variables */
+    --scrollbar-thumb: var(--color-light-surface);
+    --scrollbar-thumb-hover: var(--color-light-primary);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+* {
+    font-family: "poppins", sans-serif;
+}
+
+@theme inline {
+  --animate-cell-ripple: cell-ripple var(--duration, 200ms) ease-out none 1
+    var(--delay, 0ms);
+ 
+  @keyframes cell-ripple {
+    0% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 0.8;
+    }
+    100% {
+      opacity: 0.4;
+    }
   }
 }
