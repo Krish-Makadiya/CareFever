@@ -71,8 +71,6 @@ fix(api): resolve data fetching issue
 refactor(database): optimize queries
 ```
 
-// ...existing code...
-
 ### Pull Request Process (when a feature is complete)
 1. Update your branch
    - git fetch origin (Sync Branch if any updates)
@@ -114,10 +112,6 @@ CareFever/
 - Frontend: [Your frontend tech]
 - Backend: [Your backend tech]
 - Database: [Your database]
-- Testing: [Your testing framework]
-
-## License
-[Your chosen license]
 
 ## Contact
-[Your contact information]
+krishmakadiya2005@gmail.com
