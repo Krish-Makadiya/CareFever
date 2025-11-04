@@ -109,11 +109,7 @@ export default function Navbar() {
                         whileTap={{ scale: 0.95 }}>
                         <img
                             alt=""
-                            src={
-                                !theme
-                                    ? "/logo-dark.png"
-                                    : "/logo-light.png"
-                            }
+                            src={!theme ? "/logo-dark.png" : "/logo-light.png"}
                             className="h-10 w-auto"
                         />
                         <span className="text-xl font-bold text-light-primary-text dark:text-dark-primary-text">
@@ -136,87 +132,23 @@ export default function Navbar() {
                     variants={navStagger}
                     initial="hidden"
                     animate="visible">
-                    <Popover className="relative">
-                        <PopoverButton
-                            as={motion.button}
-                            variants={navItemAnim}
-                            className="flex items-center gap-x-1 text-sm/6 font-semibold outline-none cursor-pointer text-light-primary-text dark:text-dark-primary-text"
-                            {...buttonAnim}>
-                            Product
-                            <ChevronDown
-                                aria-hidden="true"
-                                className="size-5 flex-none text-light-primary-text dark:text-dark-primary-text"
-                            />
-                        </PopoverButton>
-                        <PopoverPanel
-                            transition
-                            className="absolute top-full -left-8 z-50 mt-3 w-screen max-w-md overflow-hidden rounded-3xl bg-light-surface dark:bg-dark-surface shadow-lg ring-1 ring-gray-900/5 transition data-closed:translate-y-1 data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in">
-                            <div className="p-4 ">
-                                {products.map((item, idx) => (
-                                    <motion.div
-                                        key={item.name}
-                                        className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-gray-100 dark:hover:bg-dark-bg"
-                                        variants={navItemAnim}
-                                        initial="hidden"
-                                        animate="visible"
-                                        transition={{ delay: idx * 0.04 }}>
-                                        <motion.div
-                                            className="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-100 dark:bg-dark-bg group-hover:bg-white dark:group-hover:bg-dark-surface"
-                                            {...iconAnim}>
-                                            <item.icon
-                                                aria-hidden="true"
-                                                className="size-6 text-light-secondary-text group-hover:text-light-primary dark:group-hover:text-dark-primary"
-                                            />
-                                        </motion.div>
-                                        <div className="flex-auto">
-                                            <a
-                                                href={item.href}
-                                                className="block font-semibold border-none text-light-primary-text dark:text-dark-primary-text">
-                                                {item.name}
-                                                <span className="absolute inset-0" />
-                                            </a>
-                                            <p className="mt-1 text-light-secondary-text dark:text-dark-secondary-text">
-                                                {item.description}
-                                            </p>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
-                            <div className="grid grid-cols-2 divide-x">
-                                {callsToAction.map((item, idx) => (
-                                    <motion.a
-                                        key={item.name}
-                                        href={item.href}
-                                        className="flex items-center justify-center gap-x-2.5 p-3 text-sm/6 font-semibold border-none hover:bg-gray-100 dark:hover:bg-dark-bg"
-                                        {...buttonAnim}
-                                        transition={{ delay: idx * 0.04 }}>
-                                        <item.icon
-                                            aria-hidden="true"
-                                            className="size-5 flex-none text-light-secondary-text dark:text-dark-secondary-text"
-                                        />
-                                        {item.name}
-                                    </motion.a>
-                                ))}
-                            </div>
-                        </PopoverPanel>
-                    </Popover>
                     <motion.a
-                        href="/about-us"
-                        className="text-sm/6 font-semibold text-light-primary-text dark:text-dark-primary-text"
+                        href="/check-health"
+                        className=" font-semibold text-light-primary-text dark:text-dark-primary-text"
                         variants={navItemAnim}
                         {...buttonAnim}>
-                        About Us
+                        Check Health
                     </motion.a>
                     <motion.a
-                        href="/pricing"
-                        className="text-sm/6 font-semibold text-light-primary-text dark:text-dark-primary-text"
+                        href="/sos"
+                        className="font-semibold text-light-primary-text dark:text-dark-primary-text"
                         variants={navItemAnim}
                         {...buttonAnim}>
-                        Pricing
+                        SOS
                     </motion.a>
                     <motion.a
                         href="/contact-us"
-                        className="text-sm/6 font-semibold text-light-primary-text dark:text-dark-primary-text"
+                        className="font-semibold text-light-primary-text dark:text-dark-primary-text"
                         variants={navItemAnim}
                         {...buttonAnim}>
                         Contact Us
@@ -248,7 +180,7 @@ export default function Navbar() {
                             className="flex gap-3 items-center"
                             variants={navItemAnim}>
                             <motion.button
-                                className="text-sm/6 font-semibold"
+                                className="font-semibold text-light-primary-text dark:text-dark-primary-text"
                                 onClick={() => navigate("/dashboard")}
                                 {...buttonAnim}>
                                 Dashboard
@@ -263,7 +195,7 @@ export default function Navbar() {
                             variants={navItemAnim}>
                             <motion.div {...buttonAnim}>
                                 <SignUpButton
-                                    className="inline-block rounded-lg px-3 py-2.5 text-sm/6 bg-gradient-to-r dark:from-[#f4f4f9] dark:to-[#ffffff] from-[#181818] to-[#262626] dark:text-black text-white font-semibold"
+                                    className="inline-block rounded-lg px-3 py-2.5 text-sm/6 bg-linear-to-r dark:from-[#f4f4f9] dark:to-light-surface from-dark-bg to-dark-surface dark:text-black text-white font-semibold"
                                     mode="modal"
                                     navigate="/sign-up">
                                     Login
@@ -364,11 +296,12 @@ export default function Navbar() {
                                         <motion.div {...iconAnim}>
                                             <UserButton />
                                         </motion.div>
+
                                         <motion.button
                                             onClick={() =>
                                                 navigate("/dashboard")
                                             }
-                                            className="text-sm/6 font-semibold text-light-primary-text dark:text-dark-primary-text"
+                                            className="font-semibold text-light-primary-text dark:text-dark-primary-text"
                                             {...buttonAnim}>
                                             Dashboard
                                         </motion.button>

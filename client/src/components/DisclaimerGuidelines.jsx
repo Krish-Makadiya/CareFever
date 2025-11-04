@@ -88,7 +88,7 @@ const DisclaimerGuidelines = () => {
 
                 {/* Guidelines Section */}
                 <motion.div
-                    className="relative rounded-2xl bg-gradient-to-br from-light-secondary/20 via-light-surface/50 to-light-secondary/10 dark:from-dark-secondary/30 dark:via-dark-surface/50 dark:to-dark-secondary/10 p-8 backdrop-blur-xl"
+                    className="relative rounded-2xl bg-linear-to-br from-light-secondary/20 via-light-surface/50 to-light-secondary/10 dark:from-dark-secondary/30 dark:via-dark-surface/50 dark:to-dark-secondary/10 p-8 backdrop-blur-xl"
                     variants={containerVariants}
                     initial="hidden"
                     whileInView="visible"
