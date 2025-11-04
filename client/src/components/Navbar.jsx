@@ -139,13 +139,16 @@ export default function Navbar() {
                         {...buttonAnim}>
                         Check Health
                     </motion.a>
-                    <motion.a
-                        href="/sos"
-                        className="font-semibold text-light-primary-text dark:text-dark-primary-text"
-                        variants={navItemAnim}
-                        {...buttonAnim}>
-                        SOS
-                    </motion.a>
+                    <div className="flex items-center gap-1">
+                        <motion.a
+                            href="/care-ai"
+                            className="font-semibold text-light-primary-text dark:text-dark-primary-text"
+                            variants={navItemAnim}
+                            {...buttonAnim}>
+                            CareAI
+                        </motion.a>
+                        <p className="text-sm text-light-secondary dark:text-dark-secondary bg-dark-secondary/15 px-2 py-1 rounded-lg">Beta</p>
+                    </div>
                     <motion.a
                         href="/contact-us"
                         className="font-semibold text-light-primary-text dark:text-dark-primary-text"
