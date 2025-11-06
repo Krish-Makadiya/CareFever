@@ -14,8 +14,12 @@ app.use(express.json());
 app.use(clerkMiddleware());
 
 // Routes
-app.use("/", userRoutes);
+app.use("/api/user", userRoutes);
 app.use("/ai", aiRoutes);
+
+// Backward compatibility route for CheckHealth
+const { saveProfileController } = require("./controller/user.controller");
+app.post("/save-profile", saveProfileController);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
