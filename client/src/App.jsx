@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Navbar from "./components/Navbar";
 import { Routes, Route } from "react-router-dom";
 import Homepage from "./pages/Homepage";
@@ -8,6 +8,7 @@ import CheckHealth from "./pages/CheckHealth";
 import ContactUs from "./pages/ContactUs";
 import ErrorPage from "./pages/ErrorPage";
 import CareAI from "./pages/CareAI";
+import GoogleTranslate from "./components/GoogleTranslate";
 
 function App() {
     return (

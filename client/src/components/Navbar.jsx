@@ -4,7 +4,7 @@ import {
     DialogPanel,
     Disclosure,
     DisclosureButton,
-    DisclosurePanel
+    DisclosurePanel,
 } from "@headlessui/react";
 import { motion } from "framer-motion";
 import {
@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import GoogleTranslate from "./GoogleTranslate";
 import { useTheme } from "../context/ThemeProvider";
 
 const products = [
@@ -143,7 +144,11 @@ export default function Navbar() {
                             {...buttonAnim}>
                             CareAI
                         </motion.a>
-                        <motion.p variants={navItemAnim} className="text-sm text-light-secondary dark:text-dark-secondary bg-light-secondary/15 dark:bg-dark-secondary/15 px-2 py-1 rounded-lg">Beta</motion.p>
+                        <motion.p
+                            variants={navItemAnim}
+                            className="text-sm text-light-secondary dark:text-dark-secondary bg-light-secondary/15 dark:bg-dark-secondary/15 px-2 py-1 rounded-lg">
+                            Beta
+                        </motion.p>
                     </div>
                     <motion.a
                         href="/contact-us"
@@ -153,26 +158,30 @@ export default function Navbar() {
                         Contact Us
                     </motion.a>
                 </motion.div>
+
                 <motion.div
                     className="hidden lg:flex lg:flex-1 lg:justify-end gap-8 items-center"
                     variants={navStagger}
                     initial="hidden"
                     animate="visible">
-                    {theme ? (
-                        <motion.span {...iconAnim}>
-                            <Sun
-                                onClick={() => setTheme(!theme)}
-                                className="h-6 w-6 text-light-primary-text dark:text-dark-primary-text"
-                            />
-                        </motion.span>
-                    ) : (
-                        <motion.span {...iconAnim}>
-                            <Moon
-                                onClick={() => setTheme(!theme)}
-                                className="h-6 w-6 text-light-primary-text dark:text-dark-primary-text"
-                            />
-                        </motion.span>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {theme ? (
+                            <motion.span {...iconAnim}>
+                                <Sun
+                                    onClick={() => setTheme(!theme)}
+                                    className="h-6 w-6 text-light-primary-text dark:text-dark-primary-text"
+                                />
+                            </motion.span>
+                        ) : (
+                            <motion.span {...iconAnim}>
+                                <Moon
+                                    onClick={() => setTheme(!theme)}
+                                    className="h-6 w-6 text-light-primary-text dark:text-dark-primary-text"
+                                />
+                            </motion.span>
+                        )}
+                        <GoogleTranslate />
+                    </div>
 
                     {isSignedIn ? (
                         <motion.div
