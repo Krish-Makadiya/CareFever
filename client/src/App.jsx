@@ -15,7 +15,10 @@ function App() {
         <div className="dark:bg-dark-bg bg-light-bg">
             <Routes>
                 <Route path="/" element={<Homepage />} />
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard" element={<>
+                    <Navbar />
+                    <Dashboard />
+                </>} />
                 <Route
                     path="/check-health"
                     element={

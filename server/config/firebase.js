@@ -1,5 +1,5 @@
 const admin = require("firebase-admin");
-const serviceAccount = require("./carefever-firebase-adminsdk-fbsvc-4121b83a3d.json");
+const serviceAccount = require("./carefever-firebase-adminsdk-fbsvc-94299ca24e.json");
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),

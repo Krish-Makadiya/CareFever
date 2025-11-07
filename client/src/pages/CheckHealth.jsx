@@ -19,6 +19,7 @@ import { useAuth, useUser } from "@clerk/clerk-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import AiHealthInsight from "../components/AiHealthInsight";
+import Loader from "../components/Loader";
 
 const COMMON_SYMPTOMS = [
     // Core fever symptoms (from previous list)
@@ -61,8 +62,14 @@ const CheckHealth = () => {
     const [language, setLanguage] = useState("en");
     const [recording, setRecording] = useState(false);
     const [aiInsight, setAiInsight] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [buttonLoading, setButtonLoading] = useState(false);
+    const [privateData, setPrivateData] = useState({
+        gender: "",
+        age: "",
+    });
 
-    const { user } = useUser();
+    const { user, isLoaded } = useUser();
 
     const canSubmit = useMemo(
         () => symptoms.length > 0 || input.trim().length > 0,
@@ -94,18 +101,16 @@ const CheckHealth = () => {
     const handleClear = () => {
         setSymptoms([]);
         setInput("");
-    };
-
-    const calcAge = (d) => {
-        const dobDate = new Date(d);
-        const diff = Date.now() - dobDate.getTime();
-        const ageDate = new Date(diff);
-        return Math.abs(ageDate.getUTCFullYear() - 1970);
+        setAiInsight(null);
+        setPrivateData({
+            gender: "",
+            age: "",
+        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        setButtonLoading(true);
         const prompt = `
         You are "CareFever," an AI-based fever assistant (not a doctor).
         Your primary role is to analyze a user's fever and related symptoms to provide clear, structured, and simple health insights.
@@ -119,10 +124,11 @@ const CheckHealth = () => {
         - Previous Medical History: N/A
         - Fever Temperature: 102°F
         - Fever Duration: 2 days
-        - Reported Symptoms: ${Array.isArray(symptoms) && symptoms.length
+        - Reported Symptoms: ${
+            Array.isArray(symptoms) && symptoms.length
                 ? symptoms.join(", ")
                 : "N/A"
-            } (e.g., "cough, body ache, sore throat, headache")
+        } (e.g., "cough, body ache, sore throat, headache")
         - Description of Feelings: ${input.trim() || "N/A"}
 
         ### Your Tasks (Fever-Specific):
@@ -183,69 +189,71 @@ const CheckHealth = () => {
 
         if (!canSubmit) return;
 
-        await toast.promise(
-            (async () => {
-                try {
-                    const res = await axios.get(
-                        `http://localhost:8000/ai/generate-remedy`,
-                        {
-                            params: {
-                                prompt,
-                            },
-                        }
-                    );
-                    console.log(res.data);
-                    setAiInsight(res.data);
-
-
-
-                    return res.data;
-                } catch (e) {
-                    console.log(e);
+        try {
+            const res = await axios.get(
+                `http://localhost:8000/ai/generate-remedy`,
+                {
+                    params: {
+                        prompt,
+                    },
                 }
-            })(),
-            {
-                loading: "AI is analyzing your symptoms...",
-                success: (data) =>
-                    `Analysis complete! Found ${data.possibleDiseases?.length || 0
-                    } possible conditions.`,
-                error: (err) => `Failed to analyze symptoms.`,
-            }
-        );
+            );
+            console.log(res.data);
+            setAiInsight(res.data);
+
+            return res.data;
+        } catch (e) {
+            console.log(e);
+        } finally {
+            setButtonLoading(false);
+        }
     };
 
     const toggleVoice = () => {
-        // Simple demo: simulates starting/stopping voice capture
         setRecording((r) => !r);
     };
 
     const saveProfileHandler = async (e) => {
         e.preventDefault();
-        console.log(input);
-        console.log(symptoms);
 
-        try {
-            console.log(user.id);
-            const res = await axios.post("http://localhost:8000/save-profile", {
-                userId: user.id,
-                ...aiInsight,
-                input,
-                symptoms,
-            });
-            console.log(res.data);
+        await toast.promise(
+            (async () => {
+                try {
+                    const res = await axios.post(
+                        "http://localhost:8000/save-profile",
+                        {
+                            userId: user.id,
+                            ...aiInsight,
+                            input,
+                            symptoms,
+                        }
+                    );
+                    console.log(res.data);
 
-            setInput("");
-            setSymptoms([]);
-        } catch (error) {
-            console.log(error);
-        }
+                    setInput("");
+                    setSymptoms([]);
+                    setAiInsight(null);
+                } catch (error) {
+                    console.log(error);
+                }
+            })(),
+            {
+                loading: "Saving your health profile...",
+                success: (data) => `Profile saved successfully!`,
+                error: (err) => `Failed to save profile.`,
+            }
+        );
+    };
+
+    if (isLoading || !isLoaded) {
+        return <Loader />;
     }
 
     return (
         <div className="w-full max-w-6xl mx-auto min-h-screen py-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Input Card */}
-                <div className="lg:col-span-2 bg-light-surface dark:bg-dark-bg rounded-2xl shadow p-5">
+                <div className="lg:col-span-2 bg-light-surface dark:bg-dark-surface rounded-2xl shadow p-5">
                     <div className="flex items-start justify-between mb-6">
                         <div className="flex items-center gap-2">
                             <HeartPulse className="w-7 h-7 text-light-primary dark:text-dark-primary" />
@@ -276,19 +284,57 @@ const CheckHealth = () => {
                                 onKeyDown={handleKeyDown}
                                 rows={4}
                                 placeholder="Describe how you feel or press Enter to add..."
-                                className="w-full rounded-xl border border-light-secondary-text/20 dark:border-dark-secondary-text/20 bg-light-background dark:bg-dark-background text-light-primary-text dark:text-dark-primary-text px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
+                                className="w-full rounded-xl bg-light-bg dark:bg-dark-bg border border-light-secondary-text/20 dark:border-dark-secondary-text/20 bg-light-background dark:bg-dark-background text-light-primary-text dark:text-dark-primary-text px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
                             />
                             <button
                                 type="button"
                                 onClick={toggleVoice}
-                                className={`absolute right-3 bottom-3 p-2 rounded-lg transition ${recording
-                                    ? "bg-red-100 text-red-600 dark:bg-red-900/30"
-                                    : "bg-light-background dark:bg-dark-background text-light-secondary-text dark:text-dark-secondary-text"
-                                    }`}
+                                className={`absolute right-3 bottom-3 p-2 rounded-lg transition ${
+                                    recording
+                                        ? "bg-red-100 text-red-600 dark:bg-red-900/30"
+                                        : "bg-light-background dark:bg-dark-background text-light-secondary-text dark:text-dark-secondary-text"
+                                }`}
                                 title="Voice Input"
                                 aria-pressed={recording}>
                                 <Mic className="w-4 h-4" />
                             </button>
+                        </div>
+
+                        <div>
+                            <label
+                                htmlFor="privateData"
+                                className="block mb-2 text-sm font-medium text-light-primary-text dark:text-dark-primary-text">
+                                Private Information
+                            </label>
+                            <div className="flex items-center gap-4">
+                                <input
+                                    type="number"
+                                    min="0"
+                                    placeholder="Age"
+                                    value={privateData.age}
+                                    onChange={(e) =>
+                                        setPrivateData((prev) => ({
+                                            ...prev,
+                                            age: e.target.value,
+                                        }))
+                                    }
+                                    className="w-1/2 rounded-xl bg-light-bg dark:bg-dark-bg border border-light-secondary-text/20 dark:border-dark-secondary-text/20 bg-light-background dark:bg-dark-background text-light-primary-text dark:text-dark-primary-text px-4 py-2 focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
+                                />
+                                <select
+                                    value={privateData.gender}
+                                    onChange={(e) =>
+                                        setPrivateData((prev) => ({
+                                            ...prev,
+                                            gender: e.target.value,
+                                        }))
+                                    }
+                                    className="w-1/2 rounded-xl border bg-light-bg dark:bg-dark-bg border-light-secondary-text/20 dark:border-dark-secondary-text/20 bg-light-background dark:bg-dark-background text-light-primary-text dark:text-dark-primary-text px-4 py-2 focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary">
+                                    <option value="">Select Gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
                         </div>
 
                         {/* Selected Symptoms */}
@@ -345,8 +391,14 @@ const CheckHealth = () => {
                                 type="submit"
                                 disabled={!canSubmit}
                                 className="px-4 py-2 rounded-xl bg-light-primary dark:bg-dark-primary text-white hover:bg-light-primary-dark dark:hover:bg-dark-primary-dark disabled:opacity-50 disabled:cursor-not-allowed">
-                                <CheckCircle2 className="w-4 h-4 inline mr-2" />{" "}
-                                Check Health
+                                {buttonLoading ? (
+                                    "Analyzing..."
+                                ) : (
+                                    <>
+                                        <CheckCircle2 className="w-4 h-4 inline mr-2" />{" "}
+                                        Check Health
+                                    </>
+                                )}
                             </button>
                         </div>
 
@@ -396,12 +448,10 @@ const CheckHealth = () => {
                     </div>
 
                     {aiInsight && (
-
                         <div className="flex flex-col gap-4 bg-light-surface dark:bg-dark-surface rounded-2xl p-5">
                             <button
                                 onClick={saveProfileHandler}
-                                className="flex items-center justify-center gap-2 px-4 py-3  bg-light-secondary dark:bg-dark-secondary rounded-md text-white w-full transition-colors"
-                            >
+                                className="flex items-center justify-center gap-2 px-4 py-3  bg-light-secondary dark:bg-dark-secondary rounded-md text-white w-full transition-colors">
                                 <Save className="w-5 h-5" />
                                 Save to My Profile
                             </button>
@@ -411,7 +461,8 @@ const CheckHealth = () => {
                                     <p className="text-sm">Disclaimer</p>
                                 </div>
                                 <p className="text-xs text-light-secondary-text dark:text-dark-secondary-text">
-                                    Not medical advice. For reference only. Will be saved to your profile and give reminders.
+                                    Not medical advice. For reference only. Will
+                                    be saved to your profile and give reminders.
                                 </p>
                             </div>
                         </div>

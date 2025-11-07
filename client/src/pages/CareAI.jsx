@@ -8,6 +8,7 @@ import {
     PhoneOutgoing,
     TriangleAlert,
 } from "lucide-react";
+import Loader from "../components/Loader";
 
 const CareAI = ({ apiKey, assistantId }) => {
     const [vapi, setVapi] = useState(null);
@@ -15,8 +16,15 @@ const CareAI = ({ apiKey, assistantId }) => {
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [transcript, setTranscript] = useState([]);
 
+    // 1. Renamed for clarity: tracks call connection attempt.
+    const [isConnecting, setIsConnecting] = useState(false);
+
+    // 2. New state for initial component/Vapi setup.
+    const [isInitializing, setIsInitializing] = useState(true);
+
     const scrollRef = useRef(null);
 
+    // Effect for auto-scrolling the transcript
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -26,15 +34,17 @@ const CareAI = ({ apiKey, assistantId }) => {
     useEffect(() => {
         const vapiInstance = new Vapi(import.meta.env.VITE_VAPI_API_KEY);
         setVapi(vapiInstance);
-        // Event listeners
+
         vapiInstance.on("call-start", () => {
             console.log("Call started");
             setIsConnected(true);
+            setIsConnecting(false); // 4. Stop connecting loader *after* call starts
         });
         vapiInstance.on("call-end", () => {
             console.log("Call ended");
             setIsConnected(false);
             setIsSpeaking(false);
+            setIsConnecting(false); // 4. Also stop loader if call ends
         });
         vapiInstance.on("speech-start", () => {
             console.log("Assistant started speaking");
@@ -62,17 +72,25 @@ const CareAI = ({ apiKey, assistantId }) => {
         });
         vapiInstance.on("error", (error) => {
             console.error("Vapi error:", error);
+            setIsConnecting(false); // 4. Also stop loader on error
         });
+
+        // 2. Vapi is set up, so initialization is complete.
+        setIsInitializing(false);
+
         return () => {
             vapiInstance?.stop();
         };
-    }, [apiKey]);
+    }, [import.meta.env.VITE_VAPI_API_KEY]); // Dependency array is correct: re-init if apiKey changes.
 
     const startCall = () => {
+        setIsConnecting(true); // 4. Only set connecting to true here.
         if (vapi) {
+            // 3. Bug Fix: Use the assistantId prop.
             vapi.start(import.meta.env.VITE_VAPI_ASSISTANT_ID);
         }
     };
+
     const endCall = () => {
         if (vapi) {
             vapi.stop();
@@ -80,6 +98,19 @@ const CareAI = ({ apiKey, assistantId }) => {
         }
     };
 
+    // 2. Render initial loading state for the whole page.
+    if (isInitializing) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader />
+                <p className="ml-2 text-light-primary-text dark:text-dark-primary-text">
+                    Initializing Assistant...
+                </p>
+            </div>
+        );
+    }
+
+    // Main component render
     return (
         <div>
             {/* Page Header */}
@@ -92,6 +123,7 @@ const CareAI = ({ apiKey, assistantId }) => {
                     advice and support for fever symptoms.
                 </p>
 
+                {/* --- Your Warning/Beta Notices Here --- */}
                 <div className="bg-light-secondary/15 dark:bg-dark-secondary/10 border-l-4 flex gap-2 items-center border-light-secondary dark:border-dark-secondary text-light-secondary dark:text-dark-secondary p-4 rounded-md mb-3">
                     <p>
                         <strong>Beta Notice:</strong> CareAI is currently in
@@ -100,7 +132,7 @@ const CareAI = ({ apiKey, assistantId }) => {
                         consult a healthcare professional for serious concerns.
                     </p>
                 </div>
-                <div className="bg-yellow-100/80 dark:bg-yellow-100/10 border-l-4 flex gap-2 items-center border-yellow-500  text-yellow-700 dark:text-yellow-200 p-4 rounded-md mb-6">
+                <div className="bg-yellow-100/80 dark:bg-yellow-100/10 border-l-4 flex gap-2 items-center border-yellow-500   text-yellow-700 dark:text-yellow-200 p-4 rounded-md mb-6">
                     <TriangleAlert className="" size={50} />
                     <p>
                         <strong>Note:</strong> CareAI is an AI assistant
@@ -112,17 +144,30 @@ const CareAI = ({ apiKey, assistantId }) => {
                         medical condition.
                     </p>
                 </div>
+                {/* --- End Notices --- */}
 
                 <div className="flex justify-center gap-[2%]">
                     {/* Call Interface */}
                     <div className=" self-baseline bg-light-bg dark:bg-dark-bg rounded-lg flex justify-center p-6 mb-8">
                         {!isConnected ? (
+                            // 4. Updated button to show connecting state
                             <button
-                                className="flex gap-2 items-center bg-light-primary dark:bg-dark-primary text-white border-none rounded-full px-5 py-4 text-base font-bold cursor-pointer transition-all duration-300 ease-in-out"
-                                onClick={startCall}>
-                                <PhoneOutgoing /> <p>Talk to Assistant</p>
+                                className="flex gap-2 items-center bg-light-primary dark:bg-dark-primary text-white border-none rounded-full px-5 py-4 text-base font-bold cursor-pointer transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-wait"
+                                onClick={startCall}
+                                disabled={isConnecting}>
+                                {isConnecting ? (
+                                    <>
+                                        <p>Connecting...</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <PhoneOutgoing />{" "}
+                                        <p>Talk to Assistant</p>
+                                    </>
+                                )}
                             </button>
                         ) : (
+                            // This is the "call connected" UI
                             <div className="bg-dark-surface rounded-xl p-5 w-[600px]">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
