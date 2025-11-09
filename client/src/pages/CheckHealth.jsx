@@ -254,26 +254,11 @@ const CheckHealth = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Input Card */}
                 <div className="lg:col-span-2 bg-light-surface dark:bg-dark-surface rounded-2xl shadow p-5">
-                    <div className="flex items-start justify-between mb-6">
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-start gap-2 mb-6">
                             <HeartPulse className="w-7 h-7 text-light-primary dark:text-dark-primary" />
-                            <h3 className="font-semibold text-light-primary-text dark:text-dark-primary-text">
+                            <h3 className="font-semibold text-lg text-light-primary-text dark:text-dark-primary-text">
                                 Describe your symptoms
                             </h3>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Languages className="w-4 h-4 text-light-secondary-text dark:text-dark-secondary-text" />
-                            <select
-                                value={language}
-                                onChange={(e) => setLanguage(e.target.value)}
-                                className="text-sm bg-transparent border rounded-lg px-2 py-1 border-light-secondary-text/20 dark:border-dark-secondary-text/20 text-light-primary-text dark:text-dark-primary-text">
-                                <option value="en">English</option>
-                                <option value="hi">Hindi</option>
-                                <option value="bn">Bengali</option>
-                                <option value="te">Telugu</option>
-                                <option value="ta">Tamil</option>
-                            </select>
-                        </div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">

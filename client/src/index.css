@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Titan+One&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Titan+One&display=swap");
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --color-light-bg: #f5f7f2;
+   /* --color-light-bg: #f5f7f2;
     --color-light-surface: #ffffff;
     --color-light-primary-text: #1e293b;
     --color-light-secondary-text: #64748b;
@@ -27,7 +27,36 @@
     --color-dark-primary-hover: #65a30d;
     --color-dark-secondary-hover: #8b5cf6;
     --color-dark-fail-hover: #ef4444;
+    --color-dark-success-hover: #22c55e; */
+
+    --color-light-bg: #f8faf9;
+    --color-light-surface: #ffffff;
+    --color-light-primary-text: #1e293b;
+    --color-light-secondary-text: #64748b;
+    --color-light-primary: #32cd32;
+    --color-light-primary-hover: #23913f;
+    --color-light-secondary: #4338ca;
+    --color-light-secondary-hover: #1e40af;
+    --color-light-fail: #e11d48;
+    --color-light-fail-hover: #be123c;
+    --color-light-success: #16a34a;
+    --color-light-success-hover: #15803d;
+    --color-light-border: #e5e7eb;
+
+    /* Dark Theme - Soft contrast, warm tint */
+    --color-dark-bg: #121212;
+    --color-dark-surface: #1e1e1e;
+    --color-dark-primary-text: #e5e7eb;
+    --color-dark-secondary-text: #9ca3af;
+    --color-dark-primary: #84cc16; /* Soft lime green */
+    --color-dark-primary-hover: #7dc46e;
+    --color-dark-secondary: #a78bfa;
+    --color-dark-secondary-hover: #3b82f6;
+    --color-dark-fail: #f87171;
+    --color-dark-fail-hover: #ef4444;
+    --color-dark-success: #4ade80;
     --color-dark-success-hover: #22c55e;
+    --color-dark-border: #2d2d2d;
 
     /* Scrollbar Variables */
     --scrollbar-thumb: var(--color-light-surface);
@@ -39,18 +68,18 @@
 }
 
 @theme inline {
-  --animate-cell-ripple: cell-ripple var(--duration, 200ms) ease-out none 1
-    var(--delay, 0ms);
- 
-  @keyframes cell-ripple {
-    0% {
-      opacity: 0.4;
+    --animate-cell-ripple: cell-ripple var(--duration, 200ms) ease-out none 1
+        var(--delay, 0ms);
+
+    @keyframes cell-ripple {
+        0% {
+            opacity: 0.4;
+        }
+        50% {
+            opacity: 0.8;
+        }
+        100% {
+            opacity: 0.4;
+        }
     }
-    50% {
-      opacity: 0.8;
-    }
-    100% {
-      opacity: 0.4;
-    }
-  }
 }

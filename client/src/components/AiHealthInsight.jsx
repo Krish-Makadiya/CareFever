@@ -57,7 +57,7 @@ const AiHealthInsight = ({ aiInsight }) => {
     return (
         <div className="space-y-6 mt-8">
             {/* Health State Overview */}
-            <div className="bg-light-surface dark:bg-dark-surface rounded-2xl p-6 shadow-lg">
+            <div className="bg-light-bg dark:bg-dark-bg  shadow-md rounded-2xl p-6">
                 <div className="flex items-center gap-3 mb-4">
                     <Heart className="w-6 h-6 text-light-primary dark:text-dark-primary" />
                     <h3 className="text-xl font-bold text-light-primary-text dark:text-dark-primary-text">
@@ -81,7 +81,7 @@ const AiHealthInsight = ({ aiInsight }) => {
 
             {/* Possible Diseases */}
             {possibleFeverCauses && possibleFeverCauses.length > 0 && (
-                <div className="bg-light-surface dark:bg-dark-surface rounded-2xl p-6 shadow-lg">
+                <div className="bg-light-bg dark:bg-dark-bg  shadow-md rounded-2xl p-6">
                     <div className="flex items-center gap-3 mb-4">
                         <AlertTriangle className="w-6 h-6 text-amber-500" />
                         <h3 className="text-xl font-bold text-light-primary-text dark:text-dark-primary-text">
@@ -93,7 +93,7 @@ const AiHealthInsight = ({ aiInsight }) => {
                         {possibleFeverCauses.map((disease, index) => (
                             <div
                                 key={index}
-                                className="border border-light-secondary-text/20 dark:border-dark-secondary-text/20 rounded-xl p-4">
+                                className="bg-light-surface dark:bg-dark-surface rounded-xl p-4">
                                 <div className="flex items-start justify-between mb-2">
                                     <h4 className="font-semibold text-light-primary-text dark:text-dark-primary-text text-lg">
                                         {disease.name}
@@ -113,7 +113,7 @@ const AiHealthInsight = ({ aiInsight }) => {
 
             {/* Remedies */}
             {feverManagementTips && feverManagementTips.length > 0 && (
-                <div className="bg-light-surface dark:bg-dark-surface rounded-2xl p-6 shadow-lg">
+                <div className="bg-light-bg dark:bg-dark-bg rounded-2xl p-6 shadow-md">
                     <div className="flex items-center gap-3 mb-4">
                         <Leaf className="w-6 h-6 text-green-600" />
                         <h3 className="text-xl font-bold text-light-primary-text dark:text-dark-primary-text">
@@ -136,7 +136,7 @@ const AiHealthInsight = ({ aiInsight }) => {
 
             {/* OTC Medicines */}
             {otcMedicines && otcMedicines.length > 0 && (
-                <div className="bg-light-surface dark:bg-dark-surface rounded-2xl p-6 shadow-lg">
+                <div className="bg-light-bg dark:bg-dark-bg rounded-2xl p-6 shadow-md">
                     <div className="flex items-center gap-3 mb-4">
                         <Pill className="w-6 h-6 text-purple-600" />
                         <h3 className="text-xl font-bold text-light-primary-text dark:text-dark-primary-text">
@@ -202,7 +202,7 @@ const AiHealthInsight = ({ aiInsight }) => {
 
             {/* Lifestyle Advice */}
             {redFlagsToWatchFor && redFlagsToWatchFor.length > 0 && (
-                <div className="bg-light-surface dark:bg-dark-surface rounded-2xl p-6 shadow-lg">
+                <div className="bg-light-bg dark:bg-dark-bg rounded-2xl p-6 shadow-md">
                     <div className="flex items-center gap-3 mb-4">
                         <Lightbulb className="w-6 h-6 text-yellow-500" />
                         <h3 className="text-xl font-bold text-light-primary-text dark:text-dark-primary-text">

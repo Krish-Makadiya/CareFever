@@ -1,30 +1,29 @@
 // ...existing code...
-import { useAuth, useUser } from "@clerk/clerk-react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import Navbar from "../components/Navbar";
 import {
-    Calendar,
-    Edit,
-    Loader2,
-    Mail,
-    MapPin,
+    User,
     Phone,
+    MapPin,
+    Mail,
+    Calendar,
+    AlertCircle,
     Save,
-    User
+    Loader2,
+    Edit,
+    Crosshair,
+    Siren,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
 import EmergencyContacts from "../components/EmergencyContacts";
-import Loader from "../components/Loader";
 import PastRecords from "../components/PastRecords";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import toast, { Toaster } from "react-hot-toast";
 
 const Dashboard = () => {
     const { userId } = useAuth();
-    const { user, isLoaded } = useUser();
-
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [hasPersonalInfo, setHasPersonalInfo] = useState(false);
+    const { user } = useUser();
+    console.log(user);
 
     const initialPersonal = {
         name: "",
@@ -34,11 +33,19 @@ const Dashboard = () => {
         address: "",
         currentLocation: "San Francisco, CA, USA", // dummy default
     };
+
     const initialEmergency = [{ name: "", phone: "", relationship: "" }];
 
     const [personalDetails, setPersonalDetails] = useState(initialPersonal);
     const [emergencyContacts, setEmergencyContacts] =
         useState(initialEmergency);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [hasPersonalInfo, setHasPersonalInfo] = useState(false);
+
+    const [isGpsLocating, setIsGpsLocating] = useState(false);
+    const [isSendingSOS, setIsSendingSOS] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -54,6 +61,92 @@ const Dashboard = () => {
         });
     };
 
+    const handleUseGpsLocation = async () => {
+        if (!("geolocation" in navigator)) {
+            toast.error("Geolocation not supported by this browser");
+            return;
+        }
+        setIsGpsLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                try {
+                    const { latitude, longitude } = position.coords;
+                    // Reverse geocode using Nominatim (OpenStreetMap)
+                    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(
+                        latitude
+                    )}&lon=${encodeURIComponent(longitude)}`;
+                    const res = await fetch(url, {
+                        headers: {
+                            // Identify the app to comply with Nominatim usage policy
+                            Accept: "application/json",
+                        },
+                    });
+                    if (!res.ok) throw new Error("Reverse geocoding failed");
+                    const data = await res.json();
+                    const a = data.address || {};
+                    const cityPart = a.city || a.town || a.village || a.hamlet;
+                    const parts = [
+                        a.road,
+                        a.suburb,
+                        cityPart,
+                        a.state,
+                        a.postcode,
+                        a.country,
+                    ].filter(Boolean);
+                    const coords = `(${latitude.toFixed(
+                        5
+                    )}, ${longitude.toFixed(5)})`;
+                    const display = (
+                        data.display_name ||
+                        parts.join(", ") ||
+                        "Unknown location"
+                    ).trim();
+                    setPersonalDetails((prev) => ({
+                        ...prev,
+                        currentLocation: `${display} ${coords}`,
+                    }));
+                    toast.success("Precise location detected");
+                } catch (err) {
+                    console.error("GPS reverse geocode error:", err);
+                    toast.error("Failed to resolve precise address");
+                } finally {
+                    setIsGpsLocating(false);
+                }
+            },
+            (error) => {
+                console.error("Geolocation error:", error);
+                const map = {
+                    1: "Permission denied",
+                    2: "Position unavailable",
+                    3: "Request timed out",
+                };
+                toast.error(map[error.code] || "Geolocation failed");
+                setIsGpsLocating(false);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    };
+
+    const handleSendSOS = async () => {
+        setIsSendingSOS(true);
+        try {
+            const res = await axios.post("http://localhost:8000/api/send-sos", {
+                phone: "+18777804236",
+                message: "🚨 SOS Alert! Help needed immediately!",
+            });
+
+            if (res.data.success) {
+                alert("✅ SOS message sent successfully!");
+            } else {
+                alert("❌ Failed to send SOS");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("⚠️ Error sending SOS");
+        } finally {
+            setIsSendingSOS(false);
+        }
+    };
     // Fetch user data on component mount
     useEffect(() => {
         const fetchUserData = async () => {
@@ -63,8 +156,11 @@ const Dashboard = () => {
             }
 
             try {
+                const API_BASE_URL =
+                    import.meta.env.VITE_API_BASE_URL ||
+                    "http://localhost:8000";
                 const response = await fetch(
-                    `${import.meta.env.VITE_SERVER_URL}/api/user/${userId}`
+                    `${API_BASE_URL}/api/user/${userId}`
                 );
                 const data = await response.json();
 
@@ -160,8 +256,10 @@ const Dashboard = () => {
         setIsSaving(true);
 
         try {
+            const API_BASE_URL =
+                import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
             const response = await fetch(
-                `${import.meta.env.VITE_SERVER_URL}/api/user/personal-info`,
+                `${API_BASE_URL}/api/user/personal-info`,
                 {
                     method: "POST",
                     headers: {
@@ -196,22 +294,47 @@ const Dashboard = () => {
         }
     };
 
-    if (!isLoaded || isLoading) {
-        return <Loader />;
+    if (isLoading) {
+        return (
+            <div className="min-h-screen dark:bg-dark-bg bg-light-bg">
+                <div className="flex items-center justify-center h-screen">
+                    <Loader2 className="h-8 w-8 animate-spin text-light-primary dark:text-dark-primary" />
+                </div>
+            </div>
+        );
     }
 
     return (
         <div className="min-h-screen dark:bg-dark-bg bg-light-bg">
-            <Toaster position="top-right" />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                     className="mb-8">
-                    <h1 className="text-3xl font-bold text-light-primary-text dark:text-dark-primary-text mb-2">
-                        Dashboard
-                    </h1>
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-3xl font-bold text-light-primary-text dark:text-dark-primary-text">
+                            Dashboard
+                        </h1>
+                        <motion.button
+                            onClick={handleSendSOS}
+                            disabled={isSendingSOS}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-light-fail dark:bg-dark-fail text-white hover:bg-light-fail-hover dark:hover:bg-dark-fail-hover disabled:opacity-50 disabled:cursor-not-allowed text-lg">
+                            {isSendingSOS ? (
+                                <div className="flex items-center gap-2">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Sending SOS...
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <Siren />
+                                    <p>SOS</p>
+                                </div>
+                            )}
+                        </motion.button>
+                    </div>
                     <p className="text-light-secondary-text dark:text-dark-secondary-text">
                         Your personal information and emergency details
                     </p>
@@ -226,8 +349,14 @@ const Dashboard = () => {
                         className="bg-light-surface dark:bg-dark-surface rounded-xl shadow-lg p-6">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-light-primary/20 dark:bg-dark-primary/20 rounded-lg">
-                                    <User className="h-6 w-6 text-light-primary dark:text-dark-primary" />
+                                <div className="p-1 bg-light-primary/20 dark:bg-dark-primary/20 rounded-full">
+                                    <img
+                                        src={user?.imageUrl}
+                                        alt=""
+                                        height={50}
+                                        width={50}
+                                        className="rounded-full"
+                                    />
                                 </div>
                                 <h2 className="text-2xl font-bold text-light-primary-text dark:text-dark-primary-text">
                                     Personal Details
@@ -243,7 +372,7 @@ const Dashboard = () => {
                                     <span>Edit</span>
                                 </motion.button>
                             ) : (
-                                <div className="text-sm text-red-600">
+                                <div className="text-sm text-light-fail dark:text-dark-fail">
                                     * All fields are required
                                 </div>
                             )}
@@ -253,7 +382,10 @@ const Dashboard = () => {
                             // View Mode - Display saved data
                             <div className="space-y-4">
                                 <div className="flex items-start gap-3">
-                                    <User className="h-5 w-5 text-light-secondary dark:text-dark-secondary mt-2" />
+                                    <User
+                                        size={32}
+                                        className="text-light-secondary dark:text-dark-secondary mt-2"
+                                    />
                                     <div className="flex-1">
                                         <label className="text-sm text-light-secondary-text dark:text-dark-secondary-text">
                                             Full Name
@@ -265,7 +397,10 @@ const Dashboard = () => {
                                 </div>
 
                                 <div className="flex items-start gap-3">
-                                    <Mail className="h-5 w-5 text-light-secondary dark:text-dark-secondary mt-2" />
+                                    <Mail
+                                        size={32}
+                                        className="text-light-secondary dark:text-dark-secondary mt-2"
+                                    />
                                     <div className="flex-1">
                                         <label className="text-sm text-light-secondary-text dark:text-dark-secondary-text">
                                             Email
@@ -277,7 +412,10 @@ const Dashboard = () => {
                                 </div>
 
                                 <div className="flex items-start gap-3">
-                                    <Phone className="h-5 w-5 text-light-secondary dark:text-dark-secondary mt-2" />
+                                    <Phone
+                                        size={32}
+                                        className="text-light-secondary dark:text-dark-secondary mt-2"
+                                    />
                                     <div className="flex-1">
                                         <label className="text-sm text-light-secondary-text dark:text-dark-secondary-text">
                                             Phone
@@ -289,7 +427,10 @@ const Dashboard = () => {
                                 </div>
 
                                 <div className="flex items-start gap-3">
-                                    <Calendar className="h-5 w-5 text-light-secondary dark:text-dark-secondary mt-2" />
+                                    <Calendar
+                                        size={32}
+                                        className="text-light-secondary dark:text-dark-secondary mt-2"
+                                    />
                                     <div className="flex-1">
                                         <label className="text-sm text-light-secondary-text dark:text-dark-secondary-text">
                                             Age
@@ -301,7 +442,10 @@ const Dashboard = () => {
                                 </div>
 
                                 <div className="flex items-start gap-3">
-                                    <MapPin className="h-5 w-5 text-light-secondary dark:text-dark-secondary mt-2" />
+                                    <MapPin
+                                        size={32}
+                                        className="text-light-secondary dark:text-dark-secondary mt-2"
+                                    />
                                     <div className="flex-1">
                                         <label className="text-sm text-light-secondary-text dark:text-dark-secondary-text">
                                             Address
@@ -313,7 +457,10 @@ const Dashboard = () => {
                                 </div>
 
                                 <div className="flex items-start gap-3">
-                                    <MapPin className="h-5 w-5 text-light-secondary dark:text-dark-secondary mt-2" />
+                                    <MapPin
+                                        size={32}
+                                        className="text-light-secondary dark:text-dark-secondary mt-2"
+                                    />
                                     <div className="flex-1">
                                         <label className="text-sm text-light-secondary-text dark:text-dark-secondary-text">
                                             Current Location
@@ -328,119 +475,100 @@ const Dashboard = () => {
                             // Edit Mode - Show form
                             <>
                                 <div className="space-y-4">
-                                    <div className="flex items-start gap-3">
-                                        <User className="h-5 w-5 text-light-secondary dark:text-dark-secondary mt-2" />
-                                        <div className="flex-1">
-                                            <label className="text-sm text-light-secondary-text dark:text-dark-secondary-text">
-                                                Full Name{" "}
-                                                <span className="text-red-500">
-                                                    *
-                                                </span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="name"
-                                                value={personalDetails.name}
-                                                onChange={handleChange}
-                                                placeholder="Enter your name"
-                                                required
-                                                aria-required="true"
-                                                className="w-full p-2 mt-1 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white border border-light-secondary/20"
-                                            />
-                                        </div>
+                                    <div className="flex items-center gap-3">
+                                        <User
+                                            size={32}
+                                            className="text-light-secondary dark:text-dark-secondary mt-2"
+                                        />
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={personalDetails.name}
+                                            onChange={handleChange}
+                                            placeholder="Enter your name"
+                                            required
+                                            aria-required="true"
+                                            className="w-full p-2 mt-1 rounded-md bg-light-bg dark:bg-dark-bg text-light-primary-text dark:text-dark-primary-text"
+                                        />
                                     </div>
 
                                     <div className="flex items-start gap-3">
-                                        <Mail className="h-5 w-5 text-light-secondary dark:text-dark-secondary mt-2" />
-                                        <div className="flex-1">
-                                            <label className="text-sm text-light-secondary-text dark:text-dark-secondary-text">
-                                                Email{" "}
-                                                <span className="text-red-500">
-                                                    *
-                                                </span>
-                                            </label>
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                value={personalDetails.email}
-                                                onChange={handleChange}
-                                                placeholder="Enter your email"
-                                                required
-                                                aria-required="true"
-                                                className="w-full p-2 mt-1 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white border border-light-secondary/20"
-                                            />
-                                        </div>
+                                        <Mail
+                                            size={32}
+                                            className="text-light-secondary dark:text-dark-secondary mt-2"
+                                        />
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={personalDetails.email}
+                                            onChange={handleChange}
+                                            placeholder="Enter your email"
+                                            required
+                                            aria-required="true"
+                                            className="w-full p-2 mt-1 rounded-md bg-light-bg dark:bg-dark-bg text-light-primary-text dark:text-dark-primary-text"
+                                        />
                                     </div>
 
                                     <div className="flex items-start gap-3">
-                                        <Phone className="h-5 w-5 text-light-secondary dark:text-dark-secondary mt-2" />
-                                        <div className="flex-1">
-                                            <label className="text-sm text-light-secondary-text dark:text-dark-secondary-text">
-                                                Phone{" "}
-                                                <span className="text-red-500">
-                                                    *
-                                                </span>
-                                            </label>
-                                            <input
-                                                type="tel"
-                                                name="phone"
-                                                value={personalDetails.phone}
-                                                onChange={handleChange}
-                                                placeholder="Enter your phone number"
-                                                required
-                                                aria-required="true"
-                                                className="w-full p-2 mt-1 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white border border-light-secondary/20"
-                                            />
-                                        </div>
+                                        <Phone
+                                            size={32}
+                                            className="text-light-secondary dark:text-dark-secondary mt-2"
+                                        />
+
+                                        <input
+                                            type="tel"
+                                            name="phone"
+                                            value={personalDetails.phone}
+                                            onChange={handleChange}
+                                            placeholder="Enter your phone number"
+                                            required
+                                            aria-required="true"
+                                            className="w-full p-2 mt-1 rounded-md bg-light-bg dark:bg-dark-bg text-light-primary-text dark:text-dark-primary-text"
+                                        />
                                     </div>
 
                                     <div className="flex items-start gap-3">
-                                        <Calendar className="h-5 w-5 text-light-secondary dark:text-dark-secondary mt-2" />
-                                        <div className="flex-1">
-                                            <label className="text-sm text-light-secondary-text dark:text-dark-secondary-text">
-                                                Age{" "}
-                                                <span className="text-red-500">
-                                                    *
-                                                </span>
-                                            </label>
-                                            <input
-                                                type="number"
-                                                name="age"
-                                                value={personalDetails.age}
-                                                onChange={handleChange}
-                                                placeholder="Enter your age"
-                                                required
-                                                aria-required="true"
-                                                className="w-full p-2 mt-1 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white border border-light-secondary/20"
-                                            />
-                                        </div>
+                                        <Calendar
+                                            size={32}
+                                            className="text-light-secondary dark:text-dark-secondary mt-2"
+                                        />
+
+                                        <input
+                                            type="number"
+                                            name="age"
+                                            value={personalDetails.age}
+                                            onChange={handleChange}
+                                            placeholder="Enter your age"
+                                            required
+                                            aria-required="true"
+                                            className="w-full p-2 mt-1 rounded-md bg-light-bg dark:bg-dark-bg text-light-primary-text dark:text-dark-primary-text"
+                                        />
                                     </div>
 
                                     <div className="flex items-start gap-3">
-                                        <MapPin className="h-5 w-5 text-light-secondary dark:text-dark-secondary mt-2" />
-                                        <div className="flex-1">
-                                            <label className="text-sm text-light-secondary-text dark:text-dark-secondary-text">
-                                                Address{" "}
-                                                <span className="text-red-500">
-                                                    *
-                                                </span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="address"
-                                                value={personalDetails.address}
-                                                onChange={handleChange}
-                                                placeholder="Enter your address"
-                                                required
-                                                aria-required="true"
-                                                className="w-full p-2 mt-1 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white border border-light-secondary/20"
-                                            />
-                                        </div>
+                                        <MapPin
+                                            size={32}
+                                            className="text-light-secondary dark:text-dark-secondary mt-2"
+                                        />
+
+                                        <input
+                                            type="text"
+                                            name="address"
+                                            value={personalDetails.address}
+                                            onChange={handleChange}
+                                            placeholder="Enter your address"
+                                            required
+                                            aria-required="true"
+                                            className="w-full p-2 mt-1 rounded-md bg-light-bg dark:bg-dark-bg text-light-primary-text dark:text-dark-primary-text"
+                                        />
                                     </div>
 
                                     {/* Current Location merged into Personal Details */}
                                     <div className="flex items-start gap-3">
-                                        <MapPin className="h-5 w-5 text-light-secondary dark:text-dark-secondary mt-2" />
+                                        <MapPin
+                                            size={32}
+                                            className="text-light-secondary dark:text-dark-secondary mt-2"
+                                        />
                                         <div className="flex-1">
                                             <label className="text-sm text-light-secondary-text dark:text-dark-secondary-text">
                                                 Current Location{" "}
@@ -448,8 +576,7 @@ const Dashboard = () => {
                                                     *
                                                 </span>
                                             </label>
-                                            <input
-                                                type="text"
+                                            <textarea
                                                 name="currentLocation"
                                                 value={
                                                     personalDetails.currentLocation
@@ -458,35 +585,62 @@ const Dashboard = () => {
                                                 placeholder="Enter your current location"
                                                 required
                                                 aria-required="true"
-                                                className="w-full p-2 mt-1 rounded-md bg-white dark:bg-gray-700 text-black dark:text-white border border-light-secondary/20"
+                                                rows={3}
+                                                className="w-full p-2 mt-1 rounded-md bg-light-bg dark:bg-dark-bg text-light-primary-text dark:text-dark-primary-text resize-y"
                                             />
-                                            <p className="text-xs text-light-secondary-text dark:text-dark-secondary-text mt-1">
-                                                You can edit the default
-                                                location above.
-                                            </p>
+                                            <div className="flex items-center gap-[2%]">
+                                                <button
+                                                    type="button"
+                                                    onClick={
+                                                        handleUseGpsLocation
+                                                    }
+                                                    disabled={isGpsLocating}
+                                                    className="w-[49%] mt-6 py-2 px-3 bg-light-secondary dark:bg-dark-secondary text-white rounded-lg font-semibold hover:bg-light-secondary-hover dark:hover:bg-dark-secondary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                                    {isGpsLocating ? (
+                                                        <>
+                                                            <Loader2 size={26} className="animate-spin" />
+                                                            Using GPS...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Crosshair size={26} className="" />
+                                                            Get location{" "}
+                                                        </>
+                                                    )}
+                                                </button>
+                                                <motion.button
+                                                    onClick={handleSave}
+                                                    disabled={isSaving}
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    className="w-[49%] mt-6 py-2 px-3 bg-light-primary dark:bg-dark-primary text-white rounded-lg font-semibold hover:bg-light-primary-hover dark:hover:bg-dark-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                                    {isSaving ? (
+                                                        <>
+                                                            <Loader2
+                                                                size={26}
+                                                                className="animate-spin"
+                                                            />
+                                                            <span>
+                                                                Saving...
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Save
+                                                                size={26}
+                                                                className=""
+                                                            />
+                                                            <span>
+                                                                Save Personal
+                                                                Details
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </motion.button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Save Button */}
-                                <motion.button
-                                    onClick={handleSave}
-                                    disabled={isSaving}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="w-full mt-6 py-3 px-6 bg-light-primary dark:bg-dark-primary text-white rounded-lg font-semibold hover:bg-light-primary-hover dark:hover:bg-dark-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                                    {isSaving ? (
-                                        <>
-                                            <Loader2 className="h-5 w-5 animate-spin" />
-                                            <span>Saving...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Save className="h-5 w-5" />
-                                            <span>Save Personal Details</span>
-                                        </>
-                                    )}
-                                </motion.button>
                             </>
                         )}
                     </motion.div>

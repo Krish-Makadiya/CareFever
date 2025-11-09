@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { ArrowRight, BracesIcon, MoveLeft, MoveRight, X } from "lucide-react";
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
+import { SignInButton, SignUpButton } from "@clerk/clerk-react";
 
 const navigation = [
     { name: "Product", href: "#" },
@@ -19,7 +20,11 @@ export default function LandingPage() {
 
     const fadeUp = {
         hidden: { opacity: 0, y: 40 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.6, ease: "easeOut" },
+        },
     };
 
     const subtle = { scale: 1, transition: { duration: 0.15 } };
@@ -67,12 +72,10 @@ export default function LandingPage() {
                         className="text-center"
                         variants={containerVariants}
                         initial="hidden"
-                        animate="visible"
-                    >
+                        animate="visible">
                         <motion.h1
                             variants={fadeUp}
-                            className="text-4xl md:text-6xl font-semibold tracking-tight text-balance text-light-primary-text dark:text-dark-primary-text"
-                        >
+                            className="text-4xl md:text-6xl font-semibold tracking-tight text-balance text-light-primary-text dark:text-dark-primary-text">
                             <span className="text-light-primary dark:text-dark-primary">
                                 AI-powered
                             </span>{" "}
@@ -81,8 +84,7 @@ export default function LandingPage() {
 
                         <motion.p
                             variants={fadeUp}
-                            className="mt-8 text-sm md:text-lg text-pretty text-light-secondary-text dark:text-dark-secondary-text"
-                        >
+                            className="mt-8 text-sm md:text-lg text-pretty text-light-secondary-text dark:text-dark-secondary-text">
                             Personalized advice and triage driven by AI and
                             community-shared symptom data. Learn, contribute,
                             and get timely support.
@@ -90,24 +92,20 @@ export default function LandingPage() {
 
                         <motion.div
                             variants={fadeUp}
-                            className="mt-10 flex items-center justify-center gap-x-6"
-                        >
-                            <motion.a
-                                href="#"
-                                whileHover={{ scale: 1.03 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="rounded-md bg-light-primary dark:bg-dark-primary px-3.5 py-2.5 text-sm font-semibold text-dark-primary-text shadow-xs hover:bg-light-primary-hover dark:hover:bg-dark-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2"
-                            >
-                                Get started
-                            </motion.a>
+                            className="mt-10 flex justify-center gap-x-6">
+                            <SignInButton
+                                className="inline-block rounded-lg px-3 py-2.5 text-sm/6 bg-linear-to-r dark:from-[#f4f4f9] dark:to-light-surface from-dark-bg to-dark-surface dark:text-black text-white font-semibold"
+                                mode="modal"
+                                navigate="/sign-up">
+                                Get Started
+                            </SignInButton>
 
-                            <motion.a
-                                href="#"
+                            <motion.div
                                 whileHover={{ x: 4 }}
-                                className="text-sm/6 font-semibold text-light-primary-text dark:text-dark-primary-text"
-                            >
-                                Learn more <span aria-hidden="true">→</span>
-                            </motion.a>
+                                className="text-sm text-light-primary-text dark:text-dark-primary-text bg-light-primary/20 dark:bg-dark-primary/20 px-3 py-2 rounded-lg">
+                                    <p>Username: <span className="text-light-primary dark:text-dark-primary font-semibold">Demo</span></p>
+                                    <p>Password: <span className="text-light-primary dark:text-dark-primary font-semibold">carefever@123</span></p>
+                                </motion.div>
                         </motion.div>
                     </motion.div>
                 </div>

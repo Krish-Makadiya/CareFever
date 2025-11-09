@@ -2,13 +2,14 @@ const express = require("express");
 const cors = require("cors");
 const userRoutes = require("./routes/user.route");
 const aiRoutes = require("./routes/ai.route");
+const alertsRoutes = require("./routes/alerts.route");
+const sosRoutes = require("./routes/sos.route");
 const { clerkMiddleware } = require("@clerk/express");
 const dotenv = require("dotenv");
 dotenv.config({ path: ".env.local" });
 
 const app = express();
 
-// Middleware to parse JSON requests
 app.use(
     cors({
         origin: [
@@ -32,6 +33,8 @@ app.use(clerkMiddleware());
 // Routes
 app.use("/api/user", userRoutes);
 app.use("/ai", aiRoutes);
+app.use("/api/alerts", alertsRoutes);
+app.use("/api/sos", sosRoutes);
 
 // Backward compatibility route for CheckHealth
 const { saveProfileController } = require("./controller/user.controller");

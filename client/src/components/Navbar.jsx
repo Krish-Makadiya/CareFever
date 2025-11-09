@@ -151,11 +151,11 @@ export default function Navbar() {
                         </motion.p>
                     </div>
                     <motion.a
-                        href="/contact-us"
+                        href="/medi-news"
                         className="font-semibold text-light-primary-text dark:text-dark-primary-text"
                         variants={navItemAnim}
                         {...buttonAnim}>
-                        Contact Us
+                        Medi-News
                     </motion.a>
                 </motion.div>
 
