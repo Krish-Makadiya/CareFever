@@ -191,7 +191,7 @@ const CheckHealth = () => {
 
         try {
             const res = await axios.get(
-                `http://localhost:8000/ai/generate-remedy`,
+                `${import.meta.env.VITE_SERVER_URL}/ai/generate-remedy`,
                 {
                     params: {
                         prompt,
@@ -220,7 +220,7 @@ const CheckHealth = () => {
             (async () => {
                 try {
                     const res = await axios.post(
-                        "http://localhost:8000/save-profile",
+                        `${import.meta.env.VITE_SERVER_URL}/save-profile`,
                         {
                             userId: user.id,
                             ...aiInsight,
