@@ -23,8 +23,7 @@ const EmergencyContacts = () => {
             }
 
             try {
-                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                const response = await fetch(`${API_BASE_URL}/api/user/${userId}/emergency-contacts`);
+                const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/user/${userId}/emergency-contacts`);
                 const data = await response.json();
 
                 if (data.success && data.data && data.data.length > 0) {
@@ -108,8 +107,7 @@ const EmergencyContacts = () => {
         setIsSaving(true);
 
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-            const response = await fetch(`${API_BASE_URL}/api/user/emergency-contacts`, {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/user/emergency-contacts`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

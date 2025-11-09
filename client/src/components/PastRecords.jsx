@@ -42,9 +42,8 @@ const PastRecords = () => {
             }
 
             try {
-                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
                 const limit = showAll ? '' : '2';
-                const url = `${API_BASE_URL}/api/user/${userId}/past-records${limit ? `?limit=${limit}` : ''}`;
+                const url = `${import.meta.env.VITE_SERVER_URL}/api/user/${userId}/past-records${limit ? `?limit=${limit}` : ''}`;
                 
                 console.log('Fetching past records from:', url);
                 
