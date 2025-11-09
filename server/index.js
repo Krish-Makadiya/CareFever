@@ -9,7 +9,23 @@ dotenv.config({ path: ".env.local" });
 const app = express();
 
 // Middleware to parse JSON requests
-app.use(cors());
+app.use(
+    cors({
+        origin: [
+            "http://localhost:5173", // Development
+            "https://care-fever.vercel.app", // Production
+        ],
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        credentials: true,
+        allowedHeaders: [
+            "Content-Type",
+            "Authorization",
+            "svix-id",
+            "svix-timestamp",
+            "svix-signature",
+        ],
+    })
+);
 app.use(express.json());
 app.use(clerkMiddleware());
 
