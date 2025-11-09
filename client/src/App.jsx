@@ -1,14 +1,11 @@
-import React, { useEffect } from "react";
+import { Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import { Routes, Route } from "react-router-dom";
-import Homepage from "./pages/Homepage";
-import Dashboard from "./pages/Dashboard";
-import { Check } from "lucide-react";
+import CareAI from "./pages/CareAI";
 import CheckHealth from "./pages/CheckHealth";
 import ContactUs from "./pages/ContactUs";
+import Dashboard from "./pages/Dashboard";
 import ErrorPage from "./pages/ErrorPage";
-import CareAI from "./pages/CareAI";
-import GoogleTranslate from "./components/GoogleTranslate";
+import Homepage from "./pages/Homepage";
 
 function App() {
     return (
